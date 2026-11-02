@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "start": "electron ."
   },
-  "dependencies": { "react": "^19.1.0", "react-dom": "^19.1.0" },
+  "dependencies": { "dotenv": "^16.5.0", "react": "^19.1.0", "react-dom": "^19.1.0" },
   "devDependencies": {
     "@types/node": "^22.15.0", "@types/react": "^19.1.0", "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.4.1", "concurrently": "^9.1.2", "cross-env": "^7.0.3", "electron": "^36.3.1",
