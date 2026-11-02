@@ -30,7 +30,12 @@ def canonical_action_digest(action: ActionRequest) -> str:
         "external_side_effect": action.external_side_effect,
         "destructive": action.destructive,
     }
-    encoded = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str).encode()
+    try:
+        encoded = json.dumps(
+            body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Action payload must contain only finite JSON-compatible values.") from exc
     return hashlib.sha256(encoded).hexdigest()
 
 
@@ -81,8 +86,8 @@ class ActionPolicy:
         # Empty allowlists are not wildcards: every tool must be explicitly named.
         if action.tool not in grant.allowed_tools:
             return deny("Tool is not explicitly present in the grant's allowlist.")
-        if action.target and action.target not in grant.allowed_targets:
-            return deny("Target is not explicitly present in the grant's exact allowlist.")
+        if action.target not in grant.allowed_targets:
+            return deny("Target (including an empty target) is not explicitly present in the exact allowlist.")
         if risk in (RiskLevel.HIGH, RiskLevel.CRITICAL):
             if not approval_valid:
                 return require("This action requires fresh approval bound to its exact payload and target.")
