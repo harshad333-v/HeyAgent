@@ -22,10 +22,13 @@ A Windows-first, hybrid-AI desktop agent with screen understanding, voice intera
 | Native desktop automation | Windows UI Automation, evaluated adapters such as pywinauto |
 | Persistence | SQLite with migrations; local files for artifacts |
 | Computer-use autonomy | Approval required before every state-changing action; remembered grants are explicit opt-in only |
-| Voice | Push-to-talk default + opt-in hands-free/wake phrase |\n| Architecture | Modular monolith with isolated execution workers |
+| Voice | Push-to-talk default + opt-in hands-free/wake phrase |
+| Architecture | Modular monolith with isolated execution workers |
 | Distribution | Signed Windows installer, updates and rollback |
 
-The binding architecture decisions, rationale, system topology and delivery sequence are recorded in [ADR-0001](docs/decisions/0001-core-architecture.md) and [Architecture Overview](docs/architecture/overview.md). These are target decisions; planned components are not yet shipped.\n\n## Full product capabilities
+The binding architecture decisions, rationale, system topology and delivery sequence are recorded in [ADR-0001](docs/decisions/0001-core-architecture.md) and [Architecture Overview](docs/architecture/overview.md). These are target decisions; planned components are not yet shipped.
+
+## Full product capabilities
 
 1. Desktop companion: floating orb/panel, global hotkeys, tray, chat, settings, multi-monitor and DPI support.
 2. Voice: streaming conversation, STT, TTS, dictation, interruption/barge-in, device selection and multilingual operation.
