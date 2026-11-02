@@ -5,12 +5,19 @@ import os
 from pathlib import Path
 from typing import FrozenSet
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from backend.app.security.api_guard import LocalRequestRejected, validate_local_request
 from backend.app.security.sqlite_store import SQLiteSecurityStore
 from backend.app.security.service import AuthorizationService
+from backend.app.tasks import IdempotencyConflict, TaskNotFound, TaskStateConflict, TaskStore
+
+
+class TaskCreateBody(BaseModel):
+    title: str = Field(min_length=1, max_length=160)
+    instruction: str = Field(min_length=1, max_length=12000)
 
 
 def _origins_from_env() -> FrozenSet[str]:
@@ -41,6 +48,10 @@ def create_app(
     )
     app.state.security_store = SQLiteSecurityStore(app.state.database_path)
     app.state.authorization_service = AuthorizationService(app.state.security_store)
+    task_database = Path(app.state.database_path).with_name(
+        Path(app.state.database_path).name + ".tasks.sqlite3"
+    )
+    app.state.task_store = TaskStore(task_database)
 
     @app.middleware("http")
     async def require_local_session(request: Request, call_next):
@@ -89,6 +100,50 @@ def create_app(
             "audit_storage": "sqlite-append-only",
             "authorization_service": True,
         }
+
+    @app.post("/v1/tasks", status_code=201)
+    async def create_task(
+        body: TaskCreateBody,
+        response: Response,
+        idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    ) -> dict[str, object]:
+        if idempotency_key is not None and not 8 <= len(idempotency_key) <= 128:
+            raise HTTPException(status_code=422, detail="Idempotency-Key must be 8-128 characters.")
+        try:
+            task, created = app.state.task_store.create(
+                title=body.title.strip(),
+                instruction=body.instruction.strip(),
+                idempotency_key=idempotency_key,
+            )
+        except IdempotencyConflict as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        if not task["title"] or not task["instruction"]:
+            raise HTTPException(status_code=422, detail="Title and instruction cannot be blank.")
+        response.status_code = 201 if created else 200
+        return task
+
+    @app.get("/v1/tasks")
+    async def list_tasks(
+        limit: int = Query(default=50, ge=1, le=100),
+        before: str | None = Query(default=None, max_length=64),
+    ) -> dict[str, object]:
+        return {"tasks": app.state.task_store.list(limit=limit, before=before)}
+
+    @app.get("/v1/tasks/{task_id}")
+    async def get_task(task_id: str) -> dict[str, object]:
+        try:
+            return app.state.task_store.get(task_id)
+        except TaskNotFound as exc:
+            raise HTTPException(status_code=404, detail="Task not found.") from exc
+
+    @app.post("/v1/tasks/{task_id}/cancel")
+    async def cancel_task(task_id: str) -> dict[str, object]:
+        try:
+            return app.state.task_store.cancel(task_id)
+        except TaskNotFound as exc:
+            raise HTTPException(status_code=404, detail="Task not found.") from exc
+        except TaskStateConflict as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     return app
 
