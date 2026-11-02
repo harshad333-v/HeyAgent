@@ -2,7 +2,7 @@
 
 ## 1. Purpose and scope
 
-HeyAgent is the repository and product name for Project Clicky: a production-grade Windows desktop AI companion. It must deliver the full approved feature scope; it is not a demo, toy application or reduced MVP.
+Arya is the product identity and user-facing name. HeyAgent is the GitHub repository name. Arya is a production-grade Windows desktop AI companion. It must deliver the full approved feature scope; it is not a demo, toy application or reduced MVP.
 
 ## 2. Functional requirements
 
@@ -41,6 +41,20 @@ Model/provider selection, voice, language, shortcuts, theme, privacy, screen cap
 
 ### FR-12 Production operations
 Structured logs, diagnostics, health, crash recovery, update service, signed artifacts, migrations/backups, rollback, SBOM and third-party notices.
+
+### FR-13 Security and safety
+
+- Independent fail-closed policy engine; LLM output may propose actions but never authorize them.
+- Trusted, authenticated, expiring capability grants scoped to user, session, tool, target and operation.
+- Risk-based action handling: low-risk actions within grants; explicit fresh approval for high-impact actions; prohibited actions blocked.
+- Approval bound to exact action payload, destination, user, session, task, expiry and one-time nonce; any mutation invalidates approval.
+- Global emergency stop, pause, cancellation propagation and user takeover.
+- No generic shell, arbitrary code execution or implicit administrator elevation exposed to agents.
+- Treat webpages, emails, documents, OCR, screenshots, model outputs and MCP responses as untrusted data.
+- Redacted audit trail, secret-safe logging and user-controlled retention/export/deletion.
+- Loopback-only authenticated local API, strict Origin validation, request limits and secure Electron IPC.
+- Windows-protected credential storage, isolated workers, signed updates and supply-chain verification.
+- Screen/microphone capture is visible, permissioned, event-driven and user-controlled.
 
 ## 3. Non-functional requirements
 
