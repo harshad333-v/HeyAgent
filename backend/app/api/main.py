@@ -9,10 +9,21 @@ from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from backend.app.providers.chat import ChatMessage, ChatService, ProviderNotConfigured, ProviderRequestFailed
+
 from backend.app.security.api_guard import LocalRequestRejected, validate_local_request
 from backend.app.security.sqlite_store import SQLiteSecurityStore
 from backend.app.security.service import AuthorizationService
 from backend.app.tasks import IdempotencyConflict, TaskNotFound, TaskStateConflict, TaskStore
+
+
+class ChatMessageBody(BaseModel):
+    role: str = Field(pattern="^(user|assistant)$")
+    content: str = Field(min_length=1, max_length=12000)
+
+
+class ChatBody(BaseModel):
+    messages: list[ChatMessageBody] = Field(min_length=1, max_length=40)
 
 
 class TaskCreateBody(BaseModel):
@@ -52,6 +63,7 @@ def create_app(
         Path(app.state.database_path).name + ".tasks.sqlite3"
     )
     app.state.task_store = TaskStore(task_database)
+    app.state.chat_service = ChatService()
 
     @app.middleware("http")
     async def require_local_session(request: Request, call_next):
@@ -100,6 +112,16 @@ def create_app(
             "audit_storage": "sqlite-append-only",
             "authorization_service": True,
         }
+
+    @app.post("/v1/chat/completions")
+    async def chat_completion(body: ChatBody) -> dict[str, str]:
+        try:
+            messages = [ChatMessage(role=item.role, content=item.content) for item in body.messages]
+            return await app.state.chat_service.complete(messages)
+        except ProviderNotConfigured as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ProviderRequestFailed as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     @app.post("/v1/tasks", status_code=201)
     async def create_task(
