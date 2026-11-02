@@ -1,19 +1,26 @@
-# Implementation Backlog — Full Product
+# Implementation Backlog — Full Product and HeyClicky Parity
+
+## Source-of-truth audit
+
+The public feature-parity audit is maintained in [HeyClicky Feature-Parity Audit](../product/heyclicky-feature-parity-audit.md). It records the official product sources, the verified repository baseline, parity requirements, and the implementation order. This backlog tracks delivery; the audit is the detailed acceptance reference.
+
+**Parity status: NOT ACHIEVED.** Arya currently has a security foundation and architecture documentation. A desktop app, voice stack, perception, drawing, computer-use adapters, persistent agents, integrations and routines are not yet implemented. Do not report feature parity until the acceptance criteria in the audit are satisfied.
 
 ## Delivery policy
 
-The complete product scope is retained. Work is sequenced by dependencies and risk; no milestone is a disposable demo. A capability is marked done only when implementation, tests, security review and user-facing behavior meet acceptance criteria.
+The complete product scope is retained. Work is sequenced by dependencies and risk; no milestone is a disposable demo. A capability is marked done only when implementation, tests, security review and user-facing behavior meet acceptance criteria. Do not copy HeyClicky proprietary code, branding or assets. Any third-party reference code requires license and security review.
 
-## Workstream 0 — Foundation and source audit
+## Workstream 0 — Foundation, audit and contracts
 
-- [ ] Inspect candidate repositories at pinned commits.
-- [ ] Record exact licenses and notices for copied code/assets.
-- [ ] Generate source/dependency comparison and reuse decisions.
+- [x] Public HeyClicky feature audit and current Arya baseline recorded.
+- [ ] Inspect candidate reference repositories at pinned commits.
+- [ ] Record exact licenses and notices for copied code/assets; prefer original implementations.
 - [ ] Set up branch protection and CI workflows.
 - [ ] Establish Python/Node version policy and lockfiles.
 - [ ] Define versioned API/event contracts.
 - [ ] Establish migrations, structured logging and redaction.
-- [ ] Add threat model and ADR review process.
+- [ ] Define parity traceability: requirement -> implementation -> test -> release evidence.
+- [ ] Establish threat model and ADR review process.
 
 ## Workstream 0A — Security foundation (implemented foundation on main; hardening remains)
 
@@ -34,137 +41,195 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Signed update verification, SBOM and supply-chain policy enforcement.
 - [ ] Adversarial Windows security testing and independent review.
 
-## Workstream 1 — Desktop platform
+## Workstream 1 — Windows desktop shell and interaction model
 
-- [ ] Electron main lifecycle and process supervision.
-- [ ] Secure preload bridge and IPC schemas.
-- [ ] React application shell and design tokens.
-- [ ] Floating orb and state animation.
-- [ ] System tray and global shortcut.
-- [ ] Chat, agent dashboard and settings.
-- [ ] Multi-monitor and mixed-DPI window placement.
-- [ ] Notifications, accessibility and reduced-motion settings.
-- [ ] Crash recovery and diagnostic bundle.
+- [ ] Electron main lifecycle, single-instance lock and process supervision.
+- [ ] Secure preload bridge, strict IPC schemas and renderer sandbox.
+- [ ] React application shell, design tokens and system theme integration.
+- [ ] Compact floating Arya surface with peek/expand/collapse behavior.
+- [ ] Resizable full window with sidebar, chats, agents, settings and document pane.
+- [ ] Persistent window size/position/state; multi-monitor and mixed-DPI support.
+- [ ] System tray, global hotkeys, shortcut recorder and Escape handling.
+- [ ] Orb/assistant states and agent cards with status, names, unread state and quick follow-up.
+- [ ] Chat search, pin, archive/unarchive, mark read/unread and per-chat drafts.
+- [ ] Long-chat pagination, lazy history loading and stable scroll position.
+- [ ] Notifications, quiet mode, accessibility, keyboard navigation and reduced motion.
+- [ ] Onboarding tour, user-preference interview and replayable setup.
+- [ ] Crash recovery and redacted diagnostic bundle.
 
-## Workstream 2 — Backend and cloud providers
+## Workstream 2 — Backend, provider abstraction and streaming
 
 - [x] FastAPI local service skeleton bound to loopback (health/readiness only; task API remains open).
 - [x] Local bearer authentication, Origin allowlist and request-size controls (development token provisioning only).
-- [ ] Typed provider capability registry.
+- [ ] DPAPI-backed per-installation/session token generation and rotation.
+- [ ] Typed versioned API, SSE event stream, correlation IDs and reconnect behavior.
+- [ ] Provider capability registry: text, structured output, vision, embeddings, STT, TTS and realtime audio.
 - [ ] Gemini adapter.
 - [ ] OpenAI adapter.
 - [ ] Structured output and streaming normalization.
-- [ ] Provider routing and fallback.
-- [ ] Cost, token and latency usage ledger.
-- [ ] User-configurable quotas and alerts.
-- [ ] Secret storage integration.
+- [ ] Provider routing, fallback and region/network error handling.
+- [ ] Cost, token, latency and usage ledger.
+- [ ] User-configurable quotas, budgets and alerts.
+- [ ] Secret storage integration and provider-key rotation.
 
-## Workstream 3 — Perception and vision
+## Workstream 3 — Screen perception and privacy
 
-- [ ] Screen/window/region capture with clear user controls.
-- [ ] Capture indicator and privacy settings.
-- [ ] OCR adapter and confidence output.
+- [ ] Explicit hotkey/request-based display, active-window and region capture.
+- [ ] Capture indicator, consent UI and privacy settings; no continuous hidden capture.
+- [ ] Multi-monitor capture with physical/logical pixel and DPI metadata.
+- [ ] Active application/window detection and conversation-scoped context.
+- [ ] OCR adapter with confidence and language support.
 - [ ] Windows accessibility tree adapter.
-- [ ] Visual grounding interface and model adapter.
+- [ ] Multimodal vision provider adapter and typed observation schema.
+- [ ] Visual grounding interface with confidence thresholds and fresh observations.
 - [ ] Display topology/DPI transform service.
-- [ ] Sensitive-window and redaction policies.
-- [ ] Screen change detection and event-based context reuse.
-- [ ] Perception evaluation dataset and benchmarks.
+- [ ] Sensitive-window detection, exclusion rules and redaction.
+- [ ] Screenshot non-retention by default; inspect/delete capture-derived context.
+- [ ] Screen perception evaluation dataset and benchmark suite.
 
-## Workstream 4 — Voice
+## Workstream 4 — Voice, dictation and language parity
 
-- [ ] Audio device enumeration and selection.
-- [ ] STT provider adapter and streaming transcript.
-- [ ] TTS provider adapter and streaming playback.
-- [ ] Realtime audio session adapter where supported.
-- [ ] VAD, interruption and barge-in.
-- [ ] Dictation insertion with user-controlled focus.
-- [ ] English/Hindi/Hinglish language handling.
-- [ ] Audio permission, retention and text fallback.
+- [ ] Audio device enumeration, selection and hot-plug recovery.
+- [ ] Hold-to-talk and configurable global shortcut/double-tap modes.
+- [ ] Optional wake phrase behind explicit opt-in and visible microphone state.
+- [ ] Streaming STT with partial transcript, language auto-detection and mid-utterance switching.
+- [ ] Streaming TTS with interruption/barge-in and immediate stop.
+- [ ] Voice picker, preview, rate and language settings.
+- [ ] Captions synchronized with voice output and chat.
+- [ ] Dictation insertion into the focused app with clipboard-safe restoration.
+- [ ] Terminal-safe dictation insertion (collapse newlines; never execute dictated text).
+- [ ] Multilingual speech acceptance target: 130+ languages; dictation target: 83 languages.
+- [ ] English/Hindi/Hinglish end-to-end test matrix.
+- [ ] Text fallback for mic, speaker, provider and network failure.
+- [ ] Audio permission, retention and deletion controls.
 
-## Workstream 5 — Computer use
+## Workstream 5 — Visual teaching and drawing
 
-- [ ] Typed common action and observation contracts.
-- [ ] Playwright browser adapter with isolated profiles.
-- [ ] Windows UI Automation adapter.
-- [ ] Visual coordinate fallback.
-- [ ] Integrate policy engine into every computer-use adapter.
-- [ ] Approval UI and replay protection.
-- [ ] Worker isolation and capability grants.
-- [ ] Verification and bounded recovery.
-- [ ] Cancellation and emergency stop.
-- [ ] Supported-application benchmark suite.
-
-## Workstream 6 — Visual teaching
-
-- [ ] Overlay lifecycle and input-through behavior.
-- [ ] Shared coordinate transforms.
-- [ ] Arrow, circle, highlight, labels and freehand tools.
-- [ ] Annotation history/clear/undo.
-- [ ] Guided walkthrough state machine.
-- [ ] Interactive whiteboard.
-- [ ] 2D diagram and chart renderer.
-- [ ] Three.js 3D visualization renderer.
-- [ ] Quiz/practice and lesson recording controls.
+- [ ] Overlay lifecycle, transparent click-through behavior and input safety.
+- [ ] Shared coordinate transforms across monitor, window, DPI and screenshot/model spaces.
+- [ ] Pointer, arrow, circle, highlight, underline, label, card and freehand primitives.
+- [ ] Annotation history, undo, clear and automatic lifecycle.
+- [ ] Grounded image/photo cards with source attribution.
+- [ ] Interactive 3D model renderer with select/rotate/zoom and GPU fallback.
+- [ ] Guided walkthrough state machine with goal and completed-step log.
+- [ ] Detect completion from fresh observation; never blindly repeat failed/completed steps.
+- [ ] Next/continue/repeat/stop and pause/takeover controls.
+- [ ] Tutor, quiz, slow pacing and IDE-aware code mode.
+- [ ] Optional consent-based lesson recording with visible indicator and local transcript.
+- [ ] Optional workflow capture with explicit start/stop, secret exclusions and user review.
 - [ ] Overlay E2E and multi-monitor tests.
 
-## Workstream 7 — Agent platform
+## Workstream 6 — Computer use and browser integration
+
+- [ ] Typed common action/observation contracts.
+- [ ] Chromium extension for Chrome, Edge, Brave, Arc and Vivaldi.
+- [ ] Extension install, pairing, permissions and health checks.
+- [ ] Playwright browser adapter with isolated task context/tab group.
+- [ ] Ask whether to use current browser tab or separate context.
+- [ ] Windows UI Automation adapter for native applications.
+- [ ] Visual coordinate fallback with confidence and fresh screenshot.
+- [ ] Integrate policy engine into every computer-use adapter.
+- [ ] User-facing Allow once / Always allow scoped / Not now approval UI.
+- [ ] Bind approval to exact conversation, task, tool, target and payload.
+- [ ] Mouse/keyboard/Escape/user takeover stops active computer use.
+- [ ] Worker isolation, process supervision and OS-level kill.
+- [ ] Post-action observation, verification and bounded recovery.
+- [ ] Supported-app/browser benchmark and adversarial permission tests.
+
+## Workstream 7 — Persistent agents and task orchestration
 
 - [ ] LangGraph runtime and persistent checkpointer.
-- [ ] Plan/task/run/step domain model.
+- [ ] Agent profile, name, purpose, scoped memory, conversation and output folder.
+- [ ] Conversational agent creation with concise clarification.
+- [ ] Global request routing to correct agent; duplicate prevention.
+- [ ] Plan/task/run/step domain model and idempotency keys.
 - [ ] Typed tool registry and schema validation.
-- [ ] Agent event stream and progress UI.
-- [ ] Specialist profiles and scoped context.
-- [ ] Delegation and bounded parallel execution.
-- [ ] Pause/resume/retry/cancel.
-- [ ] Per-run action, time and cost budgets.
-- [ ] Failure diagnostics and verified completion criteria.
+- [ ] Agent event stream and live progress UI.
+- [ ] Agent cards with generated names, status, follow-up and latest output files.
+- [ ] Specialist profiles, scoped context and controlled delegation.
+- [ ] Bounded parallel execution and global concurrency limits.
+- [ ] Pause/resume/retry/cancel and durable checkpoints.
+- [ ] Per-run action, time, token and cost budgets.
+- [ ] Long-running jobs with heartbeat and explicit continue/approval state.
+- [ ] Follow-ups resume the same task; avoid duplicate jobs/charges.
+- [ ] Retry classification, backoff, failure recovery and verified completion.
+- [ ] Completion announcements, quiet modes and call/screen-share suppression.
 
-## Workstream 8 — Memory, documents and knowledge
+## Workstream 8 — Files, whole-document understanding and memory
 
-- [ ] Conversation and task history.
-- [ ] Scoped memory model and inspect/edit/delete UI.
-- [ ] FTS search.
-- [ ] Embedding/vector retrieval evaluation.
-- [ ] Document ingestion workers for PDF/DOCX/XLSX/PPTX/CSV.
+- [ ] Drag/drop, file picker, paste files/images and multiple attachments.
+- [ ] PDF/DOCX/XLSX/PPTX/CSV/Markdown/TXT/image ingestion.
+- [ ] Whole-document extraction for PDFs, office documents and web pages.
+- [ ] Document preview pane beside chat; open externally; refresh Markdown preview.
+- [ ] Per-agent output folder, artifact metadata and file history.
+- [ ] Scoped conversation/task/project/preference memory.
+- [ ] Memory inspect/edit/delete/export UI.
+- [ ] FTS search and paginated conversation history.
+- [ ] Embedding/vector retrieval evaluation and opt-in index.
 - [ ] Chunk provenance and retrieval citations.
-- [ ] Workspace/project knowledge.
-- [ ] Export, backup and restore.
-- [ ] Sensitive data exclusion and retention controls.
+- [ ] Sensitive-data exclusion and configurable retention.
+- [ ] Account deletion clears remote data and local caches/artifacts with confirmation.
+- [ ] Backup/restore and portable export.
 
-## Workstream 9 — Integrations and skills
+## Workstream 9 — Integrations, accounts, MCP and skills
 
+- [ ] Built-in app catalog and connector lifecycle.
 - [ ] MCP client with approved transports.
-- [ ] MCP server registry and trust controls.
-- [ ] Per-server and per-tool permissions.
-- [ ] Connector authorization/revocation.
-- [ ] Versioned skill format and validator.
-- [ ] Skill execution policy and test harness.
+- [ ] MCP server registry, URL/local-command policy and trust controls.
+- [ ] Browser OAuth and API-key connection flows.
+- [ ] Per-server/per-account/per-tool permissions and revocation.
+- [ ] Multiple accounts per provider with labels and explicit account routing.
+- [ ] Real connector health checks; never trust token presence alone.
+- [ ] Reconnect/expired-auth state and connector readiness before task execution.
+- [ ] Live capability refresh after connector changes.
+- [ ] Read-only app research before explicit write approval.
+- [ ] Versioned skill format, validator, provenance and tests; skill text never grants permission.
 - [ ] Connector health and audit history.
 
-## Workstream 10 — Scheduling and background tasks
+## Workstream 10 — Routines, suggestions and public-web research
 
-- [ ] Durable scheduler and timezone model.
-- [ ] Event triggers and recurring jobs.
-- [ ] Worker lifecycle supervision.
-- [ ] Missed-run, retry and concurrency policies.
-- [ ] Notifications and run history.
-- [ ] Pause/disable/delete controls.
-- [ ] Resource, cost and autonomy limits.
+- [ ] Natural-language routine creation and timezone-aware recurrence.
+- [ ] Durable scheduler, run-now, pause, resume, edit and delete.
+- [ ] Offline/sleep/app-readiness handling and single catch-up run.
+- [ ] Bounded retries, repeated-failure auto-pause and concurrency policy.
+- [ ] Quiet delivery to relevant agent chat with unread indicator.
+- [ ] Public-web research with citations and recency metadata.
+- [ ] Connected-app research with source provenance and read-only permission.
+- [ ] Suggestion pipeline, source evidence, approve/skip/adjust/cancel and feedback.
+- [ ] Duplicate suppression and preference learning from dismissed/approved suggestions.
+- [ ] Morning suggestions respect focus, call, screen-share and quiet settings.
+- [ ] Scheduler/resource/cost/autonomy limits and run history.
 
-## Workstream 11 — Production release
+## Workstream 11 — Settings and product operations
+
+- [ ] Settings for account, voice, language, shortcuts, theme, capture/privacy, agents, integrations and routines.
+- [ ] Natural-language setting navigation and explanation.
+- [ ] Usage/budget dashboard; Talk remains available when agent budget is exhausted.
+- [ ] Optional subscription/billing layer requires a separate product decision; do not copy HeyClicky's plans or prices.
+- [ ] Signed Windows installer and compatibility checks.
+- [ ] Secure auto-update, idle-safe install, explicit relaunch and rollback.
+- [ ] Release notes and update status in the desktop shell.
+- [ ] Structured redacted logs, crash recovery and support diagnostics.
+- [ ] Migrations, backups, restore and data deletion.
+- [ ] SBOM, third-party notices, dependency/license scanning and supply-chain controls.
+- [ ] Windows 10/11 clean-install, upgrade and uninstall matrix.
+- [ ] Performance, accessibility, localization, sleep/resume, audio and display-change benchmarks.
+
+## Workstream 12 — Release validation
 
 - [ ] Full unit/integration/contract/E2E/security suite.
-- [ ] Prompt injection and abuse testing.
-- [ ] Windows 11 clean-install/upgrade/uninstall matrix.
-- [ ] SQLite migration and rollback tests.
+- [ ] Prompt injection and untrusted-content adversarial testing.
+- [ ] Computer-use approval replay/cross-agent/cross-task isolation tests.
+- [ ] Capture consent, sensitive-window and retention/deletion tests.
+- [ ] Windows 10/11 multi-monitor/mixed-DPI test matrix.
+- [ ] Network/provider/connector outage and recovery tests.
+- [ ] Long-running agent/routine idempotency and budget tests.
+- [ ] SQLite migration, backup and rollback tests.
 - [ ] Performance and memory benchmarks on reference hardware.
 - [ ] SBOM and third-party notices.
-- [ ] Installer and backend packaging.
-- [ ] Code signing and secure update verification.
-- [ ] Crash reporting/privacy review.
+- [ ] Installer, code signing and secure update verification.
 - [ ] Release runbook and support diagnostics.
 
 ## Definition of done
 
-No item is complete based solely on a UI surface, stub, mocked response or happy-path manual test. Each capability needs automated tests, failure handling, documented permissions and user-visible controls. Release gates are defined in [testing-strategy.md](../quality/testing-strategy.md).
+No item is complete based solely on a UI surface, stub, mocked response or happy-path manual test. Each capability needs automated tests, failure handling, documented permissions and user-visible controls. The full detailed parity criteria are in [heyclicky-feature-parity-audit.md](../product/heyclicky-feature-parity-audit.md).
