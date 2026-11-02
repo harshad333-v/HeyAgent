@@ -2,8 +2,9 @@
 from .approvals import ApprovalManager, ApprovalChallenge
 from .emergency_stop import EmergencyStop
 from .policy_engine import ActionPolicy, ActionRequest, CapabilityGrant, PolicyDecision, RiskLevel
+from .service import AuthorizationService
 
 __all__ = [
     "ActionPolicy", "ActionRequest", "ApprovalChallenge", "ApprovalManager",
-    "CapabilityGrant", "EmergencyStop", "PolicyDecision", "RiskLevel",
+    "CapabilityGrant", "AuthorizationService", "EmergencyStop", "PolicyDecision", "RiskLevel",
 ]
