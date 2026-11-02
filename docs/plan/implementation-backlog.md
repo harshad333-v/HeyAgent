@@ -1,4 +1,16 @@
-# Implementation Backlog — Full Product and HeyClicky Parity
+# Implementation Backlog — Arya Full Product and HeyClicky Parity
+
+## Accepted core architecture (2026-11-02)
+
+The implementation plan is governed by [ADR-0001: Core Architecture](../decisions/0001-core-architecture.md):
+
+- **Platform:** Windows 11 x64 first; Electron + React + TypeScript desktop, Python + FastAPI local service. No initial macOS/Linux release commitment.
+- **AI execution:** hybrid cloud + optional local models behind provider-neutral capability interfaces and a privacy-aware router. Cloud is the initial default where policy permits; local execution is available when supported and selected.
+- **Computer use:** approval-gated by default. Every state-changing computer-use action requires exact-action approval; any remembered grants are opt-in, narrow, revocable and audited.
+- **Voice:** both push-to-talk (default) and opt-in hands-free/wake phrase, with visible microphone state and immediate mute/stop.
+- **Agents:** multi-agent architecture with one supervisory orchestrator and bounded specialists; central policy controls every tool call.
+
+These are binding architecture decisions, not shipped features. Do not mark a capability complete until implementation, tests, security review and user-visible controls exist.
 
 ## Source-of-truth audit
 
@@ -41,7 +53,9 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Signed update verification, SBOM and supply-chain policy enforcement.
 - [ ] Adversarial Windows security testing and independent review.
 
-## Workstream 1 — Windows desktop shell and interaction model
+## Workstream 1 — Windows 11 desktop shell and interaction model
+
+- [ ] Windows 11 x64 support matrix, installer lifecycle and OS capability abstraction.
 
 - [ ] Electron main lifecycle, single-instance lock and process supervision.
 - [ ] Secure preload bridge, strict IPC schemas and renderer sandbox.
@@ -64,10 +78,13 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] DPAPI-backed per-installation/session token generation and rotation.
 - [ ] Typed versioned API, SSE event stream, correlation IDs and reconnect behavior.
 - [ ] Provider capability registry: text, structured output, vision, embeddings, STT, TTS and realtime audio.
-- [ ] Gemini adapter.
-- [ ] OpenAI adapter.
+- [ ] Provider capability registry and routing policy (quality, privacy, latency, cost, connectivity, user preference).
+- [ ] Gemini cloud adapter.
+- [ ] OpenAI cloud adapter.
+- [ ] Local model runtime adapter with model discovery, capability metadata, hardware/resource checks and offline behavior.
+- [ ] Explicit provider selection/fallback explanation and privacy-policy enforcement (no prohibited cloud egress).
 - [ ] Structured output and streaming normalization.
-- [ ] Provider routing, fallback and region/network error handling.
+- [ ] Hybrid provider routing, fallback and region/network/local-runtime error handling.
 - [ ] Cost, token, latency and usage ledger.
 - [ ] User-configurable quotas, budgets and alerts.
 - [ ] Secret storage integration and provider-key rotation.
@@ -89,9 +106,12 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 
 ## Workstream 4 — Voice, dictation and language parity
 
+- [ ] Push-to-talk is the default voice interaction and ships before hands-free mode.
+- [ ] Opt-in hands-free mode with visible microphone/listening indicator, configurable wake phrase and immediate mute/stop.
+
 - [ ] Audio device enumeration, selection and hot-plug recovery.
 - [ ] Hold-to-talk and configurable global shortcut/double-tap modes.
-- [ ] Optional wake phrase behind explicit opt-in and visible microphone state.
+- [ ] Wake phrase detection is disabled until explicitly enabled; visible microphone state and immediate mute/stop are mandatory.
 - [ ] Streaming STT with partial transcript, language auto-detection and mid-utterance switching.
 - [ ] Streaming TTS with interruption/barge-in and immediate stop.
 - [ ] Voice picker, preview, rate and language settings.
@@ -128,15 +148,23 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Ask whether to use current browser tab or separate context.
 - [ ] Windows UI Automation adapter for native applications.
 - [ ] Visual coordinate fallback with confidence and fresh screenshot.
-- [ ] Integrate policy engine into every computer-use adapter.
-- [ ] User-facing Allow once / Always allow scoped / Not now approval UI.
+- [ ] Integrate policy engine into every computer-use adapter; model output is never authorization.
+- [ ] Approval UI for every state-changing action: show application/site, exact target, action and side-effect summary before execution.
+- [ ] Allow once / Deny / Cancel-Stop flow; approval digest binds user, session, task, tool, target and exact payload.
+- [ ] Optional remembered grants only after explicit opt-in; narrow scope, expiry, revocation and audit.
 - [ ] Bind approval to exact conversation, task, tool, target and payload.
-- [ ] Mouse/keyboard/Escape/user takeover stops active computer use.
+- [ ] Mouse/keyboard/Escape/user takeover stops active computer use; emergency stop reaches worker process.
 - [ ] Worker isolation, process supervision and OS-level kill.
 - [ ] Post-action observation, verification and bounded recovery.
 - [ ] Supported-app/browser benchmark and adversarial permission tests.
 
-## Workstream 7 — Persistent agents and task orchestration
+## Workstream 7 — Persistent multi-agent orchestration
+
+- [ ] One supervisory orchestrator owns planning, delegation, checkpoints, conflict resolution and final synthesis.
+- [ ] Bounded specialist agents (research, coding, documents, data analysis, browser/computer use) with typed capabilities and output schemas.
+- [ ] Specialist context/memory isolation; specialists cannot grant permissions or expand their own tool access.
+- [ ] Hard limits for concurrency, delegation depth, wall-clock time, tokens, cost and tool calls.
+- [ ] Route to a single agent/deterministic workflow when delegation adds no measurable value.
 
 - [ ] LangGraph runtime and persistent checkpointer.
 - [ ] Agent profile, name, purpose, scoped memory, conversation and output folder.
@@ -147,7 +175,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Typed tool registry and schema validation.
 - [ ] Agent event stream and live progress UI.
 - [ ] Agent cards with generated names, status, follow-up and latest output files.
-- [ ] Specialist profiles, scoped context and controlled delegation.
+- [ ] Specialist profiles, scoped context and controlled delegation under the single orchestrator.
 - [ ] Bounded parallel execution and global concurrency limits.
 - [ ] Pause/resume/retry/cancel and durable checkpoints.
 - [ ] Per-run action, time, token and cost budgets.
@@ -213,10 +241,16 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Structured redacted logs, crash recovery and support diagnostics.
 - [ ] Migrations, backups, restore and data deletion.
 - [ ] SBOM, third-party notices, dependency/license scanning and supply-chain controls.
-- [ ] Windows 10/11 clean-install, upgrade and uninstall matrix.
+- [ ] Windows 11 x64 clean-install, upgrade, repair and uninstall matrix; assess Windows 10 separately without committing initial release support.
 - [ ] Performance, accessibility, localization, sleep/resume, audio and display-change benchmarks.
 
 ## Workstream 12 — Release validation
+
+- [ ] Windows 11 x64 reference-hardware validation, including mixed-DPI/multi-monitor, sleep/resume and audio hot-plug.
+- [ ] Hybrid routing tests: cloud/local capability match, privacy no-egress rules, offline fallback and resource exhaustion.
+- [ ] Voice tests for push-to-talk, hands-free opt-in, microphone indicator, mute/stop and barge-in.
+- [ ] Approval tests for exact-action binding, payload tampering, replay, remembered-grant revocation and user takeover.
+- [ ] Multi-agent tests for scope isolation, bounded delegation, concurrency and budget enforcement.
 
 - [ ] Full unit/integration/contract/E2E/security suite.
 - [ ] Prompt injection and untrusted-content adversarial testing.
@@ -230,6 +264,19 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] SBOM and third-party notices.
 - [ ] Installer, code signing and secure update verification.
 - [ ] Release runbook and support diagnostics.
+
+## Delivery sequence (updated for accepted decisions)
+
+1. **Windows desktop foundation:** Electron main/renderer/preload, Windows lifecycle, secure IPC, DPAPI credentials, local API supervision and worker supervisor.
+2. **Hybrid AI foundation:** provider capability contracts, Gemini/OpenAI adapters, local runtime adapter, privacy-aware routing, streaming chat and SSE events.
+3. **Voice:** push-to-talk first; then opt-in hands-free/wake phrase, STT/TTS, barge-in, captions and dictation.
+4. **Perception:** explicit screen capture, OCR, accessibility tree, vision and privacy controls.
+5. **Approval-gated computer use:** approval UX and exact-action policy wiring before Playwright/Windows UI Automation can perform state-changing actions.
+6. **Multi-agent runtime:** single orchestrator, bounded specialists, persistent task/run/step checkpoints, budgets and verified recovery.
+7. **Memory and files:** document ingestion, scoped memory, RAG, history and artifacts.
+8. **Integrations and automation:** MCP/connectors, account scopes, routines, suggestions and notifications.
+9. **Visual teaching:** annotation overlays, guided walkthroughs and interactive 3D.
+10. **Production hardening:** Windows packaging/signing/updates, accessibility, performance, adversarial security and full parity validation.
 
 ## Definition of done
 
