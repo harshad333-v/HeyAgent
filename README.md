@@ -38,18 +38,28 @@ A Windows-first, cloud-AI desktop agent with screen understanding, voice interac
 9. Automation: schedules, triggers, notifications, run history and spending/action limits.
 10. Production operations: audit logs, cost tracking, diagnostics, crash recovery, packaging, signing, updates and rollback.
 
-## Security status
+## Security and local API status
 
-The feature/security-safety-foundation branch contains an initial executable Python security foundation and automated security tests. It currently implements:
+The security foundation is now on `main`. It includes fail-closed authorization, explicit tool/target grants, exact-action one-time approvals, cooperative emergency stop, audit redaction, persistent SQLite grants/approvals/audit events, and a FastAPI request boundary that rejects non-loopback peers, untrusted Origins and invalid bearer tokens.
 
-- Independent, fail-closed authorization based on trusted capability grants (not model output).
-- Exact tool/target checks, grant expiry and risk classification.
-- Single-use approval challenges bound to user, session, task, exact action digest and expiry.
-- Cooperative emergency stop for registered asyncio tasks.
-- Recursive audit redaction and loopback/Origin/bearer-token validation helpers.
-- Provenance tagging for external content as untrusted.
+The local API currently exposes health and security-readiness endpoints only. It is not yet a chat service or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Desktop runtime, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
 
-**This is not yet a production security certification.** Approval and audit adapters are currently in-memory; API validation is not yet wired into a running FastAPI service; OS-level worker isolation, Windows credential storage, Electron hardening, capture-consent UI and signed updates remain outstanding. See [security implementation status](docs/security/implementation-status.md) and [threat model](docs/security/threat-model.md).
+### Run the local API (Python 3.11+)
+
+```powershell
+python -m pip install -e ".[test]"
+$env:ARYA_LOCAL_API_TOKEN = python -c "import secrets; print(secrets.token_urlsafe(32))"
+$env:ARYA_ALLOWED_ORIGINS = "app://arya"
+uvicorn backend.app.api.main:app --host 127.0.0.1 --port 8765
+```
+
+Requests must include both `Origin: app://arya` and `Authorization: Bearer <token>`. The service deliberately rejects requests without a configured token, valid Origin and loopback peer. Do not expose it on `0.0.0.0` or a LAN interface. See [local API operations](docs/deployment/local-api.md).
+
+Run tests:
+
+```powershell
+python -m pytest -q tests
+```
 
 ## Repository map
 
