@@ -93,7 +93,8 @@ async function callApi(route, body) {
   return payload;
 }
 
-ipcMain.handle("arya:chat", async (_event, messages) => {
+ipcMain.handle("arya:chat", async (event, messages) => {
+  if (event.senderFrame?.url !== "http://127.0.0.1:5173/") throw new Error("Untrusted renderer frame.");
   if (!Array.isArray(messages) || messages.length < 1 || messages.length > 40) {
     throw new Error("Invalid chat history.");
   }
