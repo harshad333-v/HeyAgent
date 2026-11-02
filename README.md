@@ -50,7 +50,8 @@ These are product goals, not a claim that every capability is already implemente
 - Security foundation with fail-closed authorization, scoped grants, exact-action one-time approvals, emergency-stop support and audit events.
 - Durable task lifecycle API: create, list, read and cancel queued tasks. This API does not execute tasks.
 - Authenticated /v1/chat/completions endpoint with bounded message history.
-- Initial Gemini and OpenAI chat adapters with explicit provider selection.
+- Gemini and OpenAI API chat adapters with per-request provider selection.
+- Gemini Web manual browser handoff: opens the user's browser and copies a prompt; it does not automate or import website responses.
 - Initial Electron + React + TypeScript desktop chat shell.
 - Context-isolated preload bridge, renderer Node integration disabled, sandbox enabled, and backend startup/readiness supervision.
 - Architecture decisions, product requirements, security documentation and implementation backlog.
@@ -85,7 +86,7 @@ For the detailed layout, see [repository structure](docs/architecture/repository
 - Python 3.11+
 - Node.js 20+
 - npm
-- A Gemini or OpenAI API key for cloud chat
+- A Gemini or OpenAI API key for API-based cloud chat; Gemini Web manual handoff does not require an API key
 
 ## Run Arya in development
 
@@ -98,19 +99,19 @@ Configure the desktop environment:
     cd apps/desktop
     Copy-Item .env.example .env
 
-Edit apps/desktop/.env and set one provider key.
+Edit apps/desktop/.env and configure the API key for each API provider you intend to use. Gemini Web manual handoff requires no API key.
 
-Gemini example:
+Gemini API example:
 
     ARYA_DEFAULT_PROVIDER=gemini
-    ARYA_CHAT_MODEL=gemini-2.5-flash
+    GEMINI_CHAT_MODEL=gemini-2.5-flash
     GEMINI_API_KEY=your_gemini_api_key
     OPENAI_API_KEY=
 
 Or select OpenAI:
 
     ARYA_DEFAULT_PROVIDER=openai
-    ARYA_CHAT_MODEL=gpt-4.1-mini
+    OPENAI_CHAT_MODEL=gpt-4.1-mini
     OPENAI_API_KEY=your_openai_api_key
     GEMINI_API_KEY=
 
@@ -123,7 +124,7 @@ The Electron main process starts the local FastAPI service, generates a per-laun
 
 **Development limitation:** the current desktop shell is intended for local development. Packaged mode is deliberately disabled until the Python runtime is bundled, credential storage is hardened and the Windows release pipeline is implemented. Do not expose the local API on 0.0.0.0 or a network interface.
 
-For backend-only operation and API details, see [local API operations](docs/deployment/local-api.md) and [task lifecycle API](docs/api/task-lifecycle.md).
+For provider behavior and security boundaries, see the dual-provider design document in docs/providers. For backend-only operation and API details, see [local API operations](docs/deployment/local-api.md) and [task lifecycle API](docs/api/task-lifecycle.md).
 
 ## Run tests
 
