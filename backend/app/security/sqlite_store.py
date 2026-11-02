@@ -178,7 +178,7 @@ class SQLiteSecurityStore:
         now: float | None = None,
     ) -> bool:
         timestamp = time.time() if now is None else now
-        with self._connect() as connection:
+        with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             cursor = connection.execute(
                 """UPDATE approval_challenges SET approved=1
@@ -196,7 +196,7 @@ class SQLiteSecurityStore:
         if not challenge_id:
             return False
         timestamp = time.time() if now is None else now
-        with self._connect() as connection:
+        with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             row = connection.execute(
                 "SELECT * FROM approval_challenges WHERE challenge_id=?",
@@ -218,7 +218,7 @@ class SQLiteSecurityStore:
 
     def purge_expired(self, *, now: float | None = None) -> int:
         timestamp = time.time() if now is None else now
-        with self._connect() as connection:
+        with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             cursor = connection.execute(
                 "DELETE FROM approval_challenges WHERE expires_at<=?", (timestamp,)
@@ -230,7 +230,7 @@ class SQLiteSecurityStore:
     def write(self, event: AuditEvent) -> None:
         details = redact(event.details)
         encoded = json.dumps(details, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-        with self._connect() as connection:
+        with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             connection.execute(
                 """INSERT INTO audit_events
@@ -243,7 +243,7 @@ class SQLiteSecurityStore:
     def list_audit_events(self, *, limit: int = 100) -> list[dict[str, Any]]:
         if not 1 <= limit <= 1000:
             raise ValueError("Audit page size must be between 1 and 1000.")
-        with self._connect() as connection:
+        with self._connection() as connection:
             rows = connection.execute(
                 """SELECT id,event_type,task_id,actor,outcome,details_json,timestamp
                    FROM audit_events ORDER BY id DESC LIMIT ?""", (limit,)
