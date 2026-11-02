@@ -40,7 +40,7 @@ A Windows-first, cloud-AI desktop agent with screen understanding, voice interac
 
 ## Security and local API status
 
-The security foundation is now on `main`. It includes fail-closed authorization, explicit tool/target grants, exact-action one-time approvals, cooperative emergency stop, audit redaction, persistent SQLite grants/approvals/audit events, and a FastAPI request boundary that rejects non-loopback peers, untrusted Origins and invalid bearer tokens.
+The security foundation is now on `main`. It includes fail-closed authorization, explicit tool/target grants, exact-action one-time approvals, cooperative emergency stop, audit redaction, persistent SQLite grants/approvals/audit events, a trusted authorization service that binds policy decisions to one-time approvals, and a FastAPI request boundary that rejects non-loopback peers, untrusted Origins and invalid bearer tokens.
 
 The local API currently exposes health and security-readiness endpoints only. It is not yet a chat service or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Desktop runtime, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
 
