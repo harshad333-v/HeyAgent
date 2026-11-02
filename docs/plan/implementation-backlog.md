@@ -142,7 +142,8 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Agent profile, name, purpose, scoped memory, conversation and output folder.
 - [ ] Conversational agent creation with concise clarification.
 - [ ] Global request routing to correct agent; duplicate prevention.
-- [x] Initial durable task record, idempotent creation and queued-task cancellation API; [ ] full plan/run/step model and worker state transitions.
+- [x] Initial durable task record, idempotent creation and queued-task cancellation API.
+- [ ] Full plan/run/step model and worker state transitions.
 - [ ] Typed tool registry and schema validation.
 - [ ] Agent event stream and live progress UI.
 - [ ] Agent cards with generated names, status, follow-up and latest output files.
