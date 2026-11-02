@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useState } from "react";
 import { ChatMessage, sendChat } from "./api";
 
 export default function App() {
@@ -7,7 +7,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function submit(event: FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement> | KeyboardEvent<HTMLTextAreaElement>) {
     event.preventDefault();
     const prompt = draft.trim();
     if (!prompt || busy) return;
