@@ -35,7 +35,7 @@ def canonical_action_digest(action: ActionRequest) -> str:
 
 
 class ActionPolicy:
-    """Authorize only trusted grants; unknown or malformed actions fail closed."""
+    """Authorize only grants belonging to the authenticated principal; fail closed."""
 
     def assess_risk(self, action: ActionRequest) -> RiskLevel:
         tool = action.tool.casefold()
@@ -55,6 +55,8 @@ class ActionPolicy:
         action: ActionRequest,
         grant: CapabilityGrant | None,
         *,
+        actor_user_id: str | None = None,
+        session_id: str | None = None,
         approval_valid: bool = False,
         now: float | None = None,
     ) -> PolicyDecision:
@@ -70,14 +72,17 @@ class ActionPolicy:
             return deny("Unrestricted command execution is not an agent capability.")
         if grant is None:
             return deny("No trusted capability grant is present.")
+        if not actor_user_id or not session_id or grant.user_id != actor_user_id or grant.session_id != session_id:
+            return deny("Capability grant does not belong to the authenticated user and session.")
         if grant.expires_at <= timestamp:
             return deny("Capability grant is expired.")
         if action.capability not in grant.capabilities:
             return deny("Required capability was not granted.")
-        if grant.allowed_tools and action.tool not in grant.allowed_tools:
-            return deny("Tool is outside the grant's allowlist.")
-        if grant.allowed_targets and action.target not in grant.allowed_targets:
-            return deny("Target is outside the grant's exact allowlist.")
+        # Empty allowlists are not wildcards: every tool must be explicitly named.
+        if action.tool not in grant.allowed_tools:
+            return deny("Tool is not explicitly present in the grant's allowlist.")
+        if action.target and action.target not in grant.allowed_targets:
+            return deny("Target is not explicitly present in the grant's exact allowlist.")
         if risk in (RiskLevel.HIGH, RiskLevel.CRITICAL):
             if not approval_valid:
                 return require("This action requires fresh approval bound to its exact payload and target.")
