@@ -15,6 +15,24 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Establish migrations, structured logging and redaction.
 - [ ] Add threat model and ADR review process.
 
+## Workstream 0A — Security foundation (in progress on feature/security-safety-foundation)
+
+- [x] Independent fail-closed policy engine and trusted capability grant model.
+- [x] Exact tool/target checks, grant expiry and conservative risk classification.
+- [x] One-time exact-action approval challenge primitive.
+- [x] Cooperative asyncio emergency stop for registered tasks.
+- [x] Audit redaction helper and loopback request validation helper.
+- [x] Untrusted external-content provenance wrapper.
+- [x] Focused security tests and GitHub Actions workflow.
+- [ ] Transactional persistent approval/grant storage and append-only audit database.
+- [ ] Wire auth, Origin checks and request limits into FastAPI middleware.
+- [ ] Process-isolated workers, filesystem/network capability adapters and OS-level kill.
+- [ ] Electron context isolation, secure preload/IPC, CSP and approval/kill-switch UI.
+- [ ] Windows Credential Manager/DPAPI integration.
+- [ ] Screen/audio capture consent indicators, privacy controls and retention/deletion UI.
+- [ ] Signed update verification, SBOM and supply-chain policy enforcement.
+- [ ] Adversarial Windows security testing and independent review.
+
 ## Workstream 1 — Desktop platform
 
 - [ ] Electron main lifecycle and process supervision.
@@ -69,7 +87,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Playwright browser adapter with isolated profiles.
 - [ ] Windows UI Automation adapter.
 - [ ] Visual coordinate fallback.
-- [ ] Action risk classifier and policy engine.
+- [ ] Integrate policy engine into every computer-use adapter.
 - [ ] Approval UI and replay protection.
 - [ ] Worker isolation and capability grants.
 - [ ] Verification and bounded recovery.
