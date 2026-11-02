@@ -5,14 +5,14 @@
   "description": "Arya Windows desktop assistant",
   "main": "electron/main.cjs",
   "scripts": {
-    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron .\"",
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && cross-env ARYA_DEV_SERVER=1 electron .\"",
     "build": "tsc --noEmit && vite build",
     "start": "electron ."
   },
   "dependencies": { "react": "^19.1.0", "react-dom": "^19.1.0" },
   "devDependencies": {
     "@types/node": "^22.15.0", "@types/react": "^19.1.0", "@types/react-dom": "^19.1.0",
-    "@vitejs/plugin-react": "^4.4.1", "concurrently": "^9.1.2", "electron": "^36.3.1",
+    "@vitejs/plugin-react": "^4.4.1", "concurrently": "^9.1.2", "cross-env": "^7.0.3", "electron": "^36.3.1",
     "typescript": "^5.8.3", "vite": "^6.3.5", "wait-on": "^8.0.3"
   }
 }
