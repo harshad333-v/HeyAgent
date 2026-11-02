@@ -1,7 +1,7 @@
 import pytest
 
 from backend.app.security.audit import AuditEvent, AuditLogger
-from backend.app.security.models import ActionRequest
+from backend.app.security.models import ActionRequest, CapabilityGrant
 from backend.app.security.sqlite_store import SQLiteSecurityStore
 
 
@@ -85,3 +85,28 @@ def sqlite3_connection(path):
         yield connection
     finally:
         connection.close()
+
+def test_capability_grant_persists_and_can_be_revoked(tmp_path):
+    db = tmp_path / "arya.sqlite3"
+    grant = CapabilityGrant(
+        user_id="user-1", session_id="session-1",
+        capabilities=frozenset({"files.read"}),
+        allowed_tools=frozenset({"read_document"}),
+        allowed_targets=frozenset({""}), expires_at=500,
+    )
+    store = SQLiteSecurityStore(db)
+    grant_id = store.save_grant(grant, now=100)
+    restarted = SQLiteSecurityStore(db)
+    restored = restarted.get_grant(
+        grant_id, user_id="user-1", session_id="session-1", now=101,
+    )
+    assert restored == grant
+    assert restarted.get_grant(
+        grant_id, user_id="other", session_id="session-1", now=101,
+    ) is None
+    assert restarted.revoke_grant(
+        grant_id, user_id="user-1", session_id="session-1", now=102,
+    )
+    assert restarted.get_grant(
+        grant_id, user_id="user-1", session_id="session-1", now=103,
+    ) is None
