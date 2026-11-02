@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("arya", Object.freeze({
-  chat: (messages) => ipcRenderer.invoke("arya:chat", messages)
+  chat: (messages, provider) => ipcRenderer.invoke("arya:chat", messages, provider),
+  openGeminiWeb: (prompt) => ipcRenderer.invoke("arya:open-gemini-web", prompt)
 }));
