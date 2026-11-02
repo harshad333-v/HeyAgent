@@ -8,7 +8,7 @@ let mainWindow;
 let backend;
 let localToken;
 let apiBase;
-const isDev = !app.isPackaged;
+const isDev = process.env.ARYA_DEV_SERVER === "1";
 
 function reserveLoopbackPort() {
   return new Promise((resolve, reject) => {
