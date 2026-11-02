@@ -1,0 +1,1 @@
+"""Arya backend application package."""
