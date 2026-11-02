@@ -12,9 +12,10 @@
 - Loopback peer, strict Origin allowlist and constant-time bearer-token validation.
 - FastAPI middleware applies the local request guard to every route; unauthenticated, non-loopback and untrusted-Origin requests fail closed.
 - SQLite-backed capability grants, approval challenges and append-only audit events. Approval consumption uses an IMMEDIATE transaction and is restart-safe across application instances.
+- Trusted `AuthorizationService` composes persistent grant lookup, policy evaluation, exact-action approval consumption and redacted authorization audit records. It authorizes proposals but does not execute tools.
 - API startup initializes the persistent security store; API docs/OpenAPI endpoints are disabled in the local service.
 - Provenance wrapper for webpage, email, document, OCR, MCP and model output as untrusted content.
-- CI runs the full Python test suite, including API and persistence tests.
+- CI is configured to run the full Python test suite, including API, authorization-service and persistence tests. The latest main-branch run has not yet been independently confirmed through the available status endpoint.
 
 ## Known limitations — not production-complete
 
