@@ -17,7 +17,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Record exact licenses and notices for copied code/assets; prefer original implementations.
 - [ ] Set up branch protection and CI workflows.
 - [ ] Establish Python/Node version policy and lockfiles.
-- [ ] Define versioned API/event contracts.
+- [x] Define initial task API request/response contract (versioned event/SSE contract remains open).
 - [ ] Establish migrations, structured logging and redaction.
 - [ ] Define parity traceability: requirement -> implementation -> test -> release evidence.
 - [ ] Establish threat model and ADR review process.
@@ -59,7 +59,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 
 ## Workstream 2 — Backend, provider abstraction and streaming
 
-- [x] FastAPI local service skeleton bound to loopback (health/readiness only; task API remains open).
+- [x] FastAPI local service skeleton bound to loopback with health/readiness and authenticated task lifecycle endpoints (no executor yet).
 - [x] Local bearer authentication, Origin allowlist and request-size controls (development token provisioning only).
 - [ ] DPAPI-backed per-installation/session token generation and rotation.
 - [ ] Typed versioned API, SSE event stream, correlation IDs and reconnect behavior.
@@ -142,7 +142,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Agent profile, name, purpose, scoped memory, conversation and output folder.
 - [ ] Conversational agent creation with concise clarification.
 - [ ] Global request routing to correct agent; duplicate prevention.
-- [ ] Plan/task/run/step domain model and idempotency keys.
+- [x] Initial durable task record, idempotent creation and queued-task cancellation API; [ ] full plan/run/step model and worker state transitions.
 - [ ] Typed tool registry and schema validation.
 - [ ] Agent event stream and live progress UI.
 - [ ] Agent cards with generated names, status, follow-up and latest output files.
