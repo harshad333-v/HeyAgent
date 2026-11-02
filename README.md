@@ -48,7 +48,7 @@ The local API currently exposes health and security-readiness endpoints only. It
 
 ```powershell
 python -m pip install -e ".[test]"
-$env:ARYA_LOCAL_API_TOKEN = python -c "import secrets; print(secrets.token_urlsafe(32))"
+$env:ARYA_LOCAL_API_TOKEN = (python -c "import secrets; print(secrets.token_urlsafe(32))")
 $env:ARYA_ALLOWED_ORIGINS = "app://arya"
 uvicorn backend.app.api.main:app --host 127.0.0.1 --port 8765
 ```
