@@ -9,9 +9,10 @@ import hashlib
 import json
 import sqlite3
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 
 class IdempotencyConflict(ValueError):
@@ -53,8 +54,20 @@ class TaskStore:
         connection.execute("PRAGMA busy_timeout = 10000")
         return connection
 
+    @contextmanager
+    def _connection(self) -> Iterator[sqlite3.Connection]:
+        connection = self._connect()
+        try:
+            yield connection
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
     def _initialize(self) -> None:
-        with self._connect() as connection:
+        with self._connection() as connection:
             connection.execute("PRAGMA journal_mode = WAL")
             connection.execute(
                 """
@@ -98,7 +111,7 @@ class TaskStore:
         fingerprint = _fingerprint(title, instruction)
         now = _now()
         task_id = str(uuid.uuid4())
-        with self._connect() as connection:
+        with self._connection() as connection:
             try:
                 connection.execute(
                     """
