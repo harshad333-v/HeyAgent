@@ -36,6 +36,10 @@ def test_service_requires_and_consumes_exact_approval(tmp_path):
         approval_challenge_id=challenge.challenge_id,
     )
     assert decision.kind is DecisionKind.ALLOW
+    audit_events = store.list_audit_events()
+    assert audit_events[0]["event_type"] == "action.authorization"
+    assert audit_events[0]["outcome"] == "allow"
+    assert "contact:123" not in str(audit_events[0]["details"])
     replay = service.authorize(
         make_action(), grant_id=grant_id, user_id="u1", session_id="s1",
         approval_challenge_id=challenge.challenge_id,
