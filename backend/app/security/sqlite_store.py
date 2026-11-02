@@ -199,12 +199,15 @@ class SQLiteSecurityStore:
         with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             row = connection.execute(
-                "SELECT * FROM approval_challenges WHERE challenge_id=?",
-                (challenge_id,),
+                """SELECT * FROM approval_challenges
+                   WHERE challenge_id=? AND user_id=? AND session_id=?""",
+                (challenge_id, user_id, session_id),
             ).fetchone()
-            # Delete regardless of validity: a challenge can never be retried.
+            # A matching principal consumes the challenge even if the payload is altered.
             connection.execute(
-                "DELETE FROM approval_challenges WHERE challenge_id=?", (challenge_id,)
+                """DELETE FROM approval_challenges
+                   WHERE challenge_id=? AND user_id=? AND session_id=?""",
+                (challenge_id, user_id, session_id),
             )
             connection.commit()
         if row is None or not row["approved"] or row["expires_at"] <= timestamp:
