@@ -15,8 +15,8 @@ From the repository root:
 python -m pip install -e .
 cd apps/desktop
 npm install
-$env:GEMINI_API_KEY = "your-key"
-# Or use OPENAI_API_KEY and set ARYA_DEFAULT_PROVIDER=openai
+Copy-Item .env.example .env
+# Edit .env and add GEMINI_API_KEY or OPENAI_API_KEY
 npm run dev
 \`\`\`
 
