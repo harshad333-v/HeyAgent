@@ -51,7 +51,7 @@ The official public feature audit is documented in [HeyClicky Feature-Parity Aud
 
 The security foundation is on `main`. It includes fail-closed authorization, explicit tool/target grants, exact-action one-time approvals, cooperative emergency stop, audit redaction, persistent SQLite grants/approvals/audit events, a trusted authorization service that binds policy decisions to one-time approvals, and a FastAPI request boundary that rejects non-loopback peers, untrusted Origins and invalid bearer tokens.
 
-The local API exposes health, security-readiness and authenticated task-lifecycle endpoints (`POST/GET /v1/tasks`, `GET /v1/tasks/{id}`, and `POST /v1/tasks/{id}/cancel`). Task records are persisted in a separate SQLite database and support idempotent creation. The authenticated `/v1/chat/completions` endpoint supports configured Gemini and OpenAI providers. There is not yet a task worker or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Desktop runtime, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
+The local API exposes health, security-readiness and authenticated task-lifecycle endpoints (`POST/GET /v1/tasks`, `GET /v1/tasks/{id}`, and `POST /v1/tasks/{id}/cancel`). Task records are persisted in a separate SQLite database and support idempotent creation. The authenticated `/v1/chat/completions` endpoint supports configured Gemini and OpenAI providers. There is not yet a task worker or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Production desktop lifecycle, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
 
 ### Run the local API (Python 3.11+)
 
@@ -77,6 +77,10 @@ See [docs/architecture/repository-structure.md](docs/architecture/repository-str
 ## Desktop development shell
 
 See [apps/desktop/README.md](apps/desktop/README.md). This development-only desktop flow requires Python 3.11+, Node.js 20+, and a Gemini or OpenAI API key. Packaged Windows mode is intentionally disabled until the backend runtime is bundled and signed.
+
+## Desktop development shell
+
+See [apps/desktop/README.md](apps/desktop/README.md) for the Windows development setup. The current shell supports local authenticated chat through Gemini or OpenAI; packaged distribution remains disabled until the Python backend is bundled and signed.
 
 ## Getting started
 
