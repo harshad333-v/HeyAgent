@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import FrozenSet
+from typing import FrozenSet, Literal
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
@@ -23,6 +23,7 @@ class ChatMessageBody(BaseModel):
 
 
 class ChatBody(BaseModel):
+    provider: Literal["gemini", "openai"] | None = None
     messages: list[ChatMessageBody] = Field(min_length=1, max_length=40)
 
 
@@ -113,11 +114,27 @@ def create_app(
             "authorization_service": True,
         }
 
+    @app.get("/v1/providers")
+    async def provider_status() -> dict[str, object]:
+        return {
+            "default_provider": app.state.chat_service.provider,
+            "providers": {
+                "gemini": {"configured": bool(os.environ.get("GEMINI_API_KEY"))},
+                "openai": {"configured": bool(os.environ.get("OPENAI_API_KEY"))},
+                "gemini_web": {"mode": "manual_handoff", "automated_chat": False},
+            },
+        }
+
     @app.post("/v1/chat/completions")
     async def chat_completion(body: ChatBody) -> dict[str, str]:
         try:
             messages = [ChatMessage(role=item.role, content=item.content) for item in body.messages]
-            return await app.state.chat_service.complete(messages)
+            service = (
+                app.state.chat_service
+                if body.provider is None or body.provider == app.state.chat_service.provider
+                else ChatService(provider=body.provider)
+            )
+            return await service.complete(messages)
         except ProviderNotConfigured as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ProviderRequestFailed as exc:
