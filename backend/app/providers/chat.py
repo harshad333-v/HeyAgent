@@ -1,4 +1,4 @@
-"""Minimal provider-neutral chat service with explicit cloud-provider selection."""
+"""Provider-neutral chat service for explicitly selected cloud providers."""
 from __future__ import annotations
 
 import os
@@ -23,13 +23,17 @@ class ProviderRequestFailed(RuntimeError):
 
 
 class ChatService:
-    """Calls one configured provider; never silently forwards to another provider."""
+    """Calls exactly one configured provider; never silently falls back."""
 
     def __init__(self, *, provider: str | None = None, api_key: str | None = None,
                  model: str | None = None, timeout_seconds: float = 45.0) -> None:
-        self.provider = (provider or os.getenv("ARYA_DEFAULT_PROVIDER", "gemini")).lower()
-        self.api_key = api_key or self._key_for(self.provider)
-        self.model = model or os.getenv("ARYA_CHAT_MODEL") or self._default_model(self.provider)
+        configured_default = os.getenv("ARYA_DEFAULT_PROVIDER", "gemini").lower()
+        self.provider = (provider or configured_default).lower()
+        self.api_key = api_key if api_key is not None else self._key_for(self.provider)
+        model_env = {"gemini": "GEMINI_CHAT_MODEL", "openai": "OPENAI_CHAT_MODEL"}.get(self.provider)
+        provider_model = os.getenv(model_env, "") if model_env else ""
+        legacy_model = os.getenv("ARYA_CHAT_MODEL", "") if self.provider == configured_default else ""
+        self.model = model or provider_model or legacy_model or self._default_model(self.provider)
         self.timeout_seconds = timeout_seconds
 
     @staticmethod
@@ -52,17 +56,21 @@ class ChatService:
                     response = await client.post(
                         "https://api.openai.com/v1/chat/completions",
                         headers={"Authorization": f"Bearer {self.api_key}"},
-                        json={"model": self.model,
-                              "messages": [{"role": m.role, "content": m.content} for m in messages]},
+                        json={"model": self.model, "messages": [
+                            {"role": message.role, "content": message.content} for message in messages
+                        ]},
                     )
                     response.raise_for_status()
                     content = response.json()["choices"][0]["message"]["content"]
                 else:
-                    prompt = "\n\n".join(f"{m.role.upper()}: {m.content}" for m in messages)
                     response = await client.post(
                         f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
                         headers={"x-goog-api-key": self.api_key},
-                        json={"contents": [{"role": "user", "parts": [{"text": prompt}]}]},
+                        json={"contents": [
+                            {"role": "model" if message.role == "assistant" else "user",
+                             "parts": [{"text": message.content}]}
+                            for message in messages
+                        ]},
                     )
                     response.raise_for_status()
                     content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
