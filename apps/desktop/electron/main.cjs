@@ -3,6 +3,7 @@ const { spawn } = require("node:child_process");
 const { randomBytes } = require("node:crypto");
 const net = require("node:net");
 const path = require("node:path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 let mainWindow;
 let backend;
