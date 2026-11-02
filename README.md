@@ -51,7 +51,7 @@ The official public feature audit is documented in [HeyClicky Feature-Parity Aud
 
 The security foundation is on `main`. It includes fail-closed authorization, explicit tool/target grants, exact-action one-time approvals, cooperative emergency stop, audit redaction, persistent SQLite grants/approvals/audit events, a trusted authorization service that binds policy decisions to one-time approvals, and a FastAPI request boundary that rejects non-loopback peers, untrusted Origins and invalid bearer tokens.
 
-The local API exposes health, security-readiness and authenticated task-lifecycle endpoints (`POST/GET /v1/tasks`, `GET /v1/tasks/{id}`, and `POST /v1/tasks/{id}/cancel`). Task records are persisted in a separate SQLite database and support idempotent creation. There is not yet a chat service, task worker or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Desktop runtime, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
+The local API exposes health, security-readiness and authenticated task-lifecycle endpoints (`POST/GET /v1/tasks`, `GET /v1/tasks/{id}`, and `POST /v1/tasks/{id}/cancel`). Task records are persisted in a separate SQLite database and support idempotent creation. The authenticated `/v1/chat/completions` endpoint supports configured Gemini and OpenAI providers. There is not yet a task worker or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Desktop runtime, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
 
 ### Run the local API (Python 3.11+)
 
@@ -74,13 +74,17 @@ python -m pytest -q tests
 
 See [docs/architecture/repository-structure.md](docs/architecture/repository-structure.md) for the canonical directory layout and ownership boundaries.
 
+## Desktop development shell
+
+See [apps/desktop/README.md](apps/desktop/README.md). This development-only desktop flow requires Python 3.11+, Node.js 20+, and a Gemini or OpenAI API key. Packaged Windows mode is intentionally disabled until the backend runtime is bundled and signed.
+
 ## Getting started
 
 The repository is being implemented in milestones. The security foundation can be installed with `python -m pip install -e ".[test]"` and tested with `python -m pytest -q tests/security` using Python 3.11+. The API foundation is available, but the desktop app and task execution worker are not implemented; do not assume an executable desktop assistant exists.
 
 ## Project status
 
-The security foundation and authenticated task-lifecycle API are on `main`. The desktop runtime, provider integration, task execution worker, user-facing permission workflow, Windows-specific controls, full product implementation, end-to-end validation, packaging and release are **not yet complete**.
+The security foundation, authenticated task API, provider-backed chat endpoint and initial Electron/React desktop shell are on `main`. Task execution, user-facing permission workflow, voice, perception, computer use, agent runtime, Windows production hardening, end-to-end validation, packaging and release are **not yet complete**.
 
 See:
 - [Product requirements](docs/product/requirements.md)
