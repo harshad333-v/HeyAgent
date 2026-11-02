@@ -25,6 +25,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [x] Untrusted external-content provenance wrapper.
 - [x] Focused security tests and GitHub Actions workflow.
 - [x] Transactional persistent approval/grant storage and append-only audit database.
+- [x] Trusted authorization service binds exact-action policy decisions, one-time approvals and redacted audit records.
 - [x] Wire bearer auth, loopback/Origin checks and request-size limits into FastAPI middleware.
 - [ ] Process-isolated workers, filesystem/network capability adapters and OS-level kill.
 - [ ] Electron context isolation, secure preload/IPC, CSP and approval/kill-switch UI.
