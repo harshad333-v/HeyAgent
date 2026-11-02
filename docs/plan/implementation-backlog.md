@@ -81,8 +81,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [x] Authenticated `/v1/chat/completions` endpoint with bounded message history.
 - [ ] Typed versioned API, SSE event stream, correlation IDs and reconnect behavior.
 - [x] Initial provider-neutral text-chat contract with explicit Gemini/OpenAI selection.
-- [ ] Provider capability registry: structured output, vision, embeddings, STT, TTS and realtime audio.
-- [ ] Provider capability registry and routing policy (quality, privacy, latency, cost, connectivity, user preference).
+- [ ] Capability registry and privacy-aware routing for structured output, vision, embeddings, STT, TTS and realtime audio.
 - [x] Gemini cloud chat adapter (non-streaming initial vertical slice).
 - [x] OpenAI chat-completions adapter (non-streaming initial vertical slice).
 - [ ] Local model runtime adapter with model discovery, capability metadata, hardware/resource checks and offline behavior.
