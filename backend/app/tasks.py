@@ -142,7 +142,7 @@ class TaskStore:
                 return self._serialize(row), False
 
     def get(self, task_id: str) -> dict[str, Any]:
-        with self._connect() as connection:
+        with self._connection() as connection:
             row = connection.execute(
                 "SELECT * FROM tasks WHERE id = ?", (task_id,)
             ).fetchone()
@@ -158,13 +158,13 @@ class TaskStore:
             parameters.append(before)
         query += " ORDER BY created_at DESC, id DESC LIMIT ?"
         parameters.append(limit)
-        with self._connect() as connection:
+        with self._connection() as connection:
             rows = connection.execute(query, parameters).fetchall()
         return [self._serialize(row) for row in rows]
 
     def cancel(self, task_id: str) -> dict[str, Any]:
         now = _now()
-        with self._connect() as connection:
+        with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             row = connection.execute(
                 "SELECT * FROM tasks WHERE id = ?", (task_id,)
