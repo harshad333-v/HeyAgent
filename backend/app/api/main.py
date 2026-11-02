@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from backend.app.security.api_guard import LocalRequestRejected, validate_local_request
+from backend.app.security.sqlite_store import SQLiteSecurityStore
 
 
 def _origins_from_env() -> FrozenSet[str]:
@@ -37,6 +38,7 @@ def create_app(
             "ARYA_DATABASE_PATH", str(Path.home() / ".arya" / "data" / "arya.sqlite3")
         )
     )
+    app.state.security_store = SQLiteSecurityStore(app.state.database_path)
 
     @app.middleware("http")
     async def require_local_session(request: Request, call_next):
