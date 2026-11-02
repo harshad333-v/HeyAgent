@@ -2,12 +2,14 @@
 
 ## Purpose and current scope
 
-The local FastAPI process is the authenticated boundary between the future Electron desktop shell and the Python backend. At this milestone it exposes only:
+The local FastAPI process is the authenticated boundary between the Electron desktop shell and the Python backend. At this milestone it exposes:
 
 - `GET /health` — process health.
 - `GET /v1/security/readiness` — reports configured boundary and storage properties.
+- `POST /v1/chat/completions` — bounded chat history routed to the explicitly configured Gemini or OpenAI provider.
+- `POST/GET /v1/tasks`, `GET /v1/tasks/{id}`, `POST /v1/tasks/{id}/cancel` — durable task lifecycle only; no task execution.
 
-It does not accept prompts, execute tools, call cloud providers or run computer automation. Those routes must not be added until typed contracts, authorization, approval and worker boundaries are implemented.
+Chat is a non-streaming development vertical slice. Provider selection is explicit (`ARYA_DEFAULT_PROVIDER=gemini|openai`); the service does not silently fall back to another provider. Configure `GEMINI_API_KEY` or `OPENAI_API_KEY` in the backend process environment. The API does not execute tools or computer automation.
 
 ## Development setup
 
@@ -40,6 +42,8 @@ $headers = @{
 }
 Invoke-RestMethod http://127.0.0.1:8765/health -Headers $headers
 Invoke-RestMethod http://127.0.0.1:8765/v1/security/readiness -Headers $headers
+$body = @{ messages = @(@{ role = "user"; content = "Explain recursion simply." }) } | ConvertTo-Json -Depth 5
+Invoke-RestMethod http://127.0.0.1:8765/v1/chat/completions -Method Post -Headers $headers -ContentType "application/json" -Body $body
 ```
 
 The middleware rejects invalid authentication, origin and peer address with a generic response. It rejects declared request bodies larger than 1 MiB. The service disables interactive API documentation and OpenAPI endpoints.
