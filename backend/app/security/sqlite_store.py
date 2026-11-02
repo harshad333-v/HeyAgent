@@ -10,15 +10,28 @@ import secrets
 import sqlite3
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
+from contextlib import contextmanager
 
 from .audit import AuditEvent, redact
-from .models import ActionRequest
+from .models import ActionRequest, CapabilityGrant
 from .policy_engine import canonical_action_digest
 from .approvals import ApprovalChallenge
 
 
 _SCHEMA = """
+CREATE TABLE IF NOT EXISTS capability_grants (
+    grant_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    session_id TEXT NOT NULL,
+    capabilities_json TEXT NOT NULL,
+    allowed_tools_json TEXT NOT NULL,
+    allowed_targets_json TEXT NOT NULL,
+    expires_at REAL NOT NULL,
+    created_at REAL NOT NULL,
+    revoked_at REAL
+);
+CREATE INDEX IF NOT EXISTS idx_grant_principal ON capability_grants(user_id, session_id, expires_at);
 CREATE TABLE IF NOT EXISTS approval_challenges (
     challenge_id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -50,11 +63,12 @@ class SQLiteSecurityStore:
     """Small synchronous store; each mutation uses an IMMEDIATE transaction."""
 
     def __init__(self, database_path: str | Path, *, busy_timeout_ms: int = 5000) -> None:
-        self.database_path = str(database_path)
+        self.database_path = str(Path(database_path).expanduser())
+        if self.database_path == ":memory:":
+            raise ValueError("A file-backed database is required for durable security state.")
         self.busy_timeout_ms = busy_timeout_ms
-        if self.database_path != ":memory:":
-            Path(self.database_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
-        with self._connect() as connection:
+        Path(self.database_path).parent.mkdir(parents=True, exist_ok=True)
+        with self._connection() as connection:
             connection.executescript(_SCHEMA)
 
     def _connect(self) -> sqlite3.Connection:
@@ -65,9 +79,74 @@ class SQLiteSecurityStore:
         connection.row_factory = sqlite3.Row
         connection.execute(f"PRAGMA busy_timeout = {int(self.busy_timeout_ms)}")
         connection.execute("PRAGMA foreign_keys = ON")
-        if self.database_path != ":memory:":
-            connection.execute("PRAGMA journal_mode = WAL")
+        connection.execute("PRAGMA journal_mode = WAL")
         return connection
+
+    @contextmanager
+    def _connection(self) -> Iterator[sqlite3.Connection]:
+        connection = self._connect()
+        try:
+            yield connection
+        finally:
+            connection.close()
+
+    def save_grant(self, grant: CapabilityGrant, *, now: float | None = None) -> str:
+        """Persist a trusted grant and return its opaque identifier."""
+        timestamp = time.time() if now is None else now
+        if not grant.user_id or not grant.session_id or grant.expires_at <= timestamp:
+            raise ValueError("A grant requires a principal, session and future expiry.")
+        grant_id = secrets.token_urlsafe(32)
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """INSERT INTO capability_grants
+                   (grant_id,user_id,session_id,capabilities_json,allowed_tools_json,
+                    allowed_targets_json,expires_at,created_at)
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (grant_id, grant.user_id, grant.session_id,
+                 json.dumps(sorted(grant.capabilities)),
+                 json.dumps(sorted(grant.allowed_tools)),
+                 json.dumps(sorted(grant.allowed_targets)), grant.expires_at, timestamp),
+            )
+            connection.commit()
+        return grant_id
+
+    def get_grant(
+        self, grant_id: str, *, user_id: str, session_id: str,
+        now: float | None = None,
+    ) -> CapabilityGrant | None:
+        timestamp = time.time() if now is None else now
+        with self._connection() as connection:
+            row = connection.execute(
+                """SELECT * FROM capability_grants
+                   WHERE grant_id=? AND user_id=? AND session_id=?
+                   AND expires_at>? AND revoked_at IS NULL""",
+                (grant_id, user_id, session_id, timestamp),
+            ).fetchone()
+        if row is None:
+            return None
+        return CapabilityGrant(
+            user_id=row["user_id"], session_id=row["session_id"],
+            capabilities=frozenset(json.loads(row["capabilities_json"])),
+            allowed_tools=frozenset(json.loads(row["allowed_tools_json"])),
+            allowed_targets=frozenset(json.loads(row["allowed_targets_json"])),
+            expires_at=row["expires_at"],
+        )
+
+    def revoke_grant(
+        self, grant_id: str, *, user_id: str, session_id: str,
+        now: float | None = None,
+    ) -> bool:
+        timestamp = time.time() if now is None else now
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            cursor = connection.execute(
+                """UPDATE capability_grants SET revoked_at=?
+                   WHERE grant_id=? AND user_id=? AND session_id=? AND revoked_at IS NULL""",
+                (timestamp, grant_id, user_id, session_id),
+            )
+            connection.commit()
+            return cursor.rowcount == 1
 
     def create_challenge(
         self, action: ActionRequest, *, user_id: str, session_id: str,
@@ -82,7 +161,7 @@ class SQLiteSecurityStore:
             action_digest=canonical_action_digest(action),
             expires_at=timestamp + ttl_seconds,
         )
-        with self._connect() as connection:
+        with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             connection.execute(
                 """INSERT INTO approval_challenges
