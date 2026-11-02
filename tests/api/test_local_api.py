@@ -49,3 +49,17 @@ def test_non_loopback_peer_is_rejected(tmp_path):
         headers={"Origin": "app://arya", "Authorization": "Bearer test-secret"},
     )
     assert response.status_code == 403
+
+def test_readiness_reports_initialized_security_components(tmp_path):
+    app = create_app(
+        token="test-secret", allowed_origins=frozenset({"app://arya"}),
+        database_path=tmp_path / "ready.sqlite3",
+    )
+    response = client_for(app).get(
+        "/v1/security/readiness",
+        headers={"Origin": "app://arya", "Authorization": "Bearer test-secret"},
+    )
+    assert response.status_code == 200
+    assert response.json()["approval_storage"] == "sqlite-transactional"
+    assert response.json()["audit_storage"] == "sqlite-append-only"
+    assert response.json()["authorization_service"] is True
