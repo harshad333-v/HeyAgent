@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from backend.app.security.api_guard import LocalRequestRejected, validate_local_request
 from backend.app.security.sqlite_store import SQLiteSecurityStore
+from backend.app.security.service import AuthorizationService
 
 
 def _origins_from_env() -> FrozenSet[str]:
@@ -39,6 +40,7 @@ def create_app(
         )
     )
     app.state.security_store = SQLiteSecurityStore(app.state.database_path)
+    app.state.authorization_service = AuthorizationService(app.state.security_store)
 
     @app.middleware("http")
     async def require_local_session(request: Request, call_next):
@@ -85,6 +87,7 @@ def create_app(
             "database_path_configured": bool(app.state.database_path),
             "approval_storage": "sqlite-transactional",
             "audit_storage": "sqlite-append-only",
+            "authorization_service": True,
         }
 
     return app
