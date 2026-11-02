@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, clipboard, ipcMain, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const { randomBytes } = require("node:crypto");
 const net = require("node:net");
@@ -94,7 +94,7 @@ async function callApi(route, body) {
   return payload;
 }
 
-ipcMain.handle("arya:chat", async (event, messages) => {
+ipcMain.handle("arya:chat", async (event, messages, provider) => {
   if (event.senderFrame?.url !== "http://127.0.0.1:5173/") throw new Error("Untrusted renderer frame.");
   if (!Array.isArray(messages) || messages.length < 1 || messages.length > 40) {
     throw new Error("Invalid chat history.");
@@ -106,7 +106,17 @@ ipcMain.handle("arya:chat", async (event, messages) => {
     }
     return { role: message.role, content: message.content };
   });
-  return callApi("/v1/chat/completions", { messages: safe });
+  if (!["gemini", "openai"].includes(provider)) throw new Error("Unsupported API provider.");
+  return callApi("/v1/chat/completions", { messages: safe, provider });
+});
+
+ipcMain.handle("arya:open-gemini-web", async (event, prompt) => {
+  if (event.senderFrame?.url !== "http://127.0.0.1:5173/") throw new Error("Untrusted renderer frame.");
+  if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 12000) {
+    throw new Error("Invalid Gemini Web prompt.");
+  }
+  clipboard.writeText(prompt);
+  await shell.openExternal("https://gemini.google.com/app");
 });
 
 app.whenReady().then(async () => {
