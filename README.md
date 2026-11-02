@@ -42,13 +42,13 @@ A Windows-first, cloud-AI desktop agent with screen understanding, voice interac
 
 The official public feature audit is documented in [HeyClicky Feature-Parity Audit](docs/product/heyclicky-feature-parity-audit.md). It records the official Windows changelog feature set, detailed acceptance requirements, the verified Arya repository baseline and delivery order.
 
-**Current status: parity is not achieved.** The repository currently contains a backend security foundation and architecture/product documentation. It does not yet contain the functional desktop app, voice, screen perception, drawing, computer-use, agent runtime, integrations or routines. See the [implementation backlog](docs/plan/implementation-backlog.md) for the complete task breakdown. Planned features must not be described as shipped functionality.
+**Current status: parity is not achieved.** The repository contains the backend security foundation, architecture/product documentation, and an authenticated durable task-lifecycle API. The task API supports create/list/read/cancel for queued work, but it does not execute tasks. The functional desktop app, voice, screen perception, drawing, computer-use adapters, agent runtime, integrations and routines are not yet implemented. See the [implementation backlog](docs/plan/implementation-backlog.md) for the complete task breakdown. Planned features must not be described as shipped functionality.
 
 ## Security and local API status
 
 The security foundation is on `main`. It includes fail-closed authorization, explicit tool/target grants, exact-action one-time approvals, cooperative emergency stop, audit redaction, persistent SQLite grants/approvals/audit events, a trusted authorization service that binds policy decisions to one-time approvals, and a FastAPI request boundary that rejects non-loopback peers, untrusted Origins and invalid bearer tokens.
 
-The local API currently exposes health and security-readiness endpoints only. It is not yet a chat service or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Desktop runtime, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
+The local API exposes health, security-readiness and authenticated task-lifecycle endpoints (`POST/GET /v1/tasks`, `GET /v1/tasks/{id}`, and `POST /v1/tasks/{id}/cancel`). Task records are persisted in a separate SQLite database and support idempotent creation. There is not yet a chat service, task worker or autonomous task executor. The token is supplied through `ARYA_LOCAL_API_TOKEN` for development; production Windows builds must move token provisioning to Windows Credential Manager/DPAPI. Desktop runtime, worker isolation, user-facing permissions/approval UI, Windows-specific hardening and signed updates remain open.
 
 ### Run the local API (Python 3.11+)
 
@@ -73,16 +73,17 @@ See [docs/architecture/repository-structure.md](docs/architecture/repository-str
 
 ## Getting started
 
-The repository is being implemented in milestones. The security foundation can be installed with `python -m pip install -e ".[test]"` and tested with `python -m pytest -q tests/security` using Python 3.11+. The desktop app and API server are not yet implemented; do not assume an executable application exists.
+The repository is being implemented in milestones. The security foundation can be installed with `python -m pip install -e ".[test]"` and tested with `python -m pytest -q tests/security` using Python 3.11+. The API foundation is available, but the desktop app and task execution worker are not implemented; do not assume an executable desktop assistant exists.
 
 ## Project status
 
-The security foundation and initial local API boundary are on `main`. The desktop runtime, provider integration, user-facing permission workflow, Windows-specific controls, full product implementation, end-to-end validation, packaging and release are **not yet complete**.
+The security foundation and authenticated task-lifecycle API are on `main`. The desktop runtime, provider integration, task execution worker, user-facing permission workflow, Windows-specific controls, full product implementation, end-to-end validation, packaging and release are **not yet complete**.
 
 See:
 - [Product requirements](docs/product/requirements.md)
 - [HeyClicky feature-parity audit](docs/product/heyclicky-feature-parity-audit.md)
 - [Architecture](docs/architecture/overview.md)
+- [Task API contract](docs/api/task-lifecycle.md)
 - [Security model](docs/security/threat-model.md)
 - [Security implementation status](docs/security/implementation-status.md)
 - [Dependency policy](docs/dependencies/policy.md)
