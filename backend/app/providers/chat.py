@@ -61,7 +61,7 @@ class ChatService:
                     prompt = "\n\n".join(f"{m.role.upper()}: {m.content}" for m in messages)
                     response = await client.post(
                         f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
-                        params={"key": self.api_key},
+                        headers={"x-goog-api-key": self.api_key},
                         json={"contents": [{"role": "user", "parts": [{"text": prompt}]}]},
                     )
                     response.raise_for_status()
