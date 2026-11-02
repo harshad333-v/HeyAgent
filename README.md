@@ -45,7 +45,7 @@ The binding architecture decisions, rationale, system topology and delivery sequ
 
 The official public feature audit is documented in [HeyClicky Feature-Parity Audit](docs/product/heyclicky-feature-parity-audit.md). It records the official Windows changelog feature set, detailed acceptance requirements, the verified Arya repository baseline and delivery order.
 
-**Current status: parity is not achieved.** The repository contains the backend security foundation, architecture/product documentation, and an authenticated durable task-lifecycle API. The task API supports create/list/read/cancel for queued work, but it does not execute tasks. The functional desktop app, voice, screen perception, drawing, computer-use adapters, agent runtime, integrations and routines are not yet implemented. See the [implementation backlog](docs/plan/implementation-backlog.md) for the complete task breakdown. Planned features must not be described as shipped functionality.
+**Current status: parity is not achieved.** The repository contains the backend security foundation, architecture/product documentation, and an authenticated durable task-lifecycle API. The task API supports create/list/read/cancel for queued work, but it does not execute tasks. A development Electron + React chat shell is now present; voice, screen perception, drawing, computer-use adapters, agent runtime, integrations and routines are not yet implemented. See the [implementation backlog](docs/plan/implementation-backlog.md) for the complete task breakdown. Planned features must not be described as shipped functionality.
 
 ## Security and local API status
 
