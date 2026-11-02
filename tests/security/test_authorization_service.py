@@ -1,4 +1,5 @@
 import pytest
+import time
 
 from backend.app.security.models import ActionRequest, CapabilityGrant, DecisionKind
 from backend.app.security.service import AuthorizationService
@@ -11,7 +12,7 @@ def make_grant():
         capabilities=frozenset({"messaging.send"}),
         allowed_tools=frozenset({"send_message"}),
         allowed_targets=frozenset({"contact:123"}),
-        expires_at=10_000,
+        expires_at=time.time() + 3600,
     )
 
 
@@ -24,7 +25,7 @@ def make_action(text="hello"):
 
 def test_service_requires_and_consumes_exact_approval(tmp_path):
     store = SQLiteSecurityStore(tmp_path / "arya.sqlite3")
-    grant_id = store.save_grant(make_grant(), now=100)
+    grant_id = store.save_grant(make_grant())
     service = AuthorizationService(store)
     challenge = service.request_approval(
         make_action(), grant_id=grant_id, user_id="u1", session_id="s1",
