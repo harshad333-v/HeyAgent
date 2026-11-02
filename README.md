@@ -2,7 +2,7 @@
 
 **Arya** is the product identity and user-facing assistant name. **HeyAgent** remains the GitHub repository name.
 
-A Windows-first, cloud-AI desktop agent with screen understanding, voice interaction, visual teaching, controlled computer use, autonomous workflows, memory, integrations, and background automation.
+A Windows-first, hybrid-AI desktop agent with screen understanding, voice interaction, visual teaching, controlled computer use, autonomous workflows, memory, integrations, and background automation.
 
 > **Product scope:** Full production-grade product. This repository is not scoped as a demo or disposable MVP. Work is delivered in dependency-ordered, testable milestones while retaining the complete approved product scope.
 
@@ -15,17 +15,17 @@ A Windows-first, cloud-AI desktop agent with screen understanding, voice interac
 | Platform | Windows 11 x64 first |
 | Desktop | Electron + React + TypeScript |
 | Backend | Python + FastAPI |
-| Agent orchestration | LangGraph |
-| AI strategy | Cloud-first; provider-independent adapters |
+| Agent orchestration | Multi-agent: one supervisory orchestrator + bounded specialist agents (LangGraph) |
+| AI strategy | Hybrid cloud + optional local models; privacy-aware provider routing |
 | Initial providers | Gemini and OpenAI adapters, subject to capability and cost evaluation |
 | Browser automation | Playwright |
 | Native desktop automation | Windows UI Automation, evaluated adapters such as pywinauto |
 | Persistence | SQLite with migrations; local files for artifacts |
-| Autonomy | Hybrid: automatic low-risk actions, approval for sensitive/high-impact actions |
-| Architecture | Modular monolith with isolated execution workers |
+| Computer-use autonomy | Approval required before every state-changing action; remembered grants are explicit opt-in only |
+| Voice | Push-to-talk default + opt-in hands-free/wake phrase |\n| Architecture | Modular monolith with isolated execution workers |
 | Distribution | Signed Windows installer, updates and rollback |
 
-## Full product capabilities
+The binding architecture decisions, rationale, system topology and delivery sequence are recorded in [ADR-0001](docs/decisions/0001-core-architecture.md) and [Architecture Overview](docs/architecture/overview.md). These are target decisions; planned components are not yet shipped.\n\n## Full product capabilities
 
 1. Desktop companion: floating orb/panel, global hotkeys, tray, chat, settings, multi-monitor and DPI support.
 2. Voice: streaming conversation, STT, TTS, dictation, interruption/barge-in, device selection and multilingual operation.
@@ -82,7 +82,7 @@ The security foundation and authenticated task-lifecycle API are on `main`. The 
 See:
 - [Product requirements](docs/product/requirements.md)
 - [HeyClicky feature-parity audit](docs/product/heyclicky-feature-parity-audit.md)
-- [Architecture](docs/architecture/overview.md)
+- [Architecture](docs/architecture/overview.md)\n- [Core architecture decision record](docs/decisions/0001-core-architecture.md)
 - [Task API contract](docs/api/task-lifecycle.md)
 - [Security model](docs/security/threat-model.md)
 - [Security implementation status](docs/security/implementation-status.md)
