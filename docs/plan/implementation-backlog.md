@@ -15,7 +15,7 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [ ] Establish migrations, structured logging and redaction.
 - [ ] Add threat model and ADR review process.
 
-## Workstream 0A — Security foundation (in progress on feature/security-safety-foundation)
+## Workstream 0A — Security foundation (implemented foundation on main; hardening remains)
 
 - [x] Independent fail-closed policy engine and trusted capability grant model.
 - [x] Exact tool/target checks, grant expiry and conservative risk classification.
@@ -24,8 +24,8 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [x] Audit redaction helper and loopback request validation helper.
 - [x] Untrusted external-content provenance wrapper.
 - [x] Focused security tests and GitHub Actions workflow.
-- [ ] Transactional persistent approval/grant storage and append-only audit database.
-- [ ] Wire auth, Origin checks and request limits into FastAPI middleware.
+- [x] Transactional persistent approval/grant storage and append-only audit database.
+- [x] Wire bearer auth, loopback/Origin checks and request-size limits into FastAPI middleware.
 - [ ] Process-isolated workers, filesystem/network capability adapters and OS-level kill.
 - [ ] Electron context isolation, secure preload/IPC, CSP and approval/kill-switch UI.
 - [ ] Windows Credential Manager/DPAPI integration.
@@ -47,8 +47,8 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 
 ## Workstream 2 — Backend and cloud providers
 
-- [ ] FastAPI service bound to loopback.
-- [ ] Local session authentication and request controls.
+- [x] FastAPI local service skeleton bound to loopback (health/readiness only; task API remains open).
+- [x] Local bearer authentication, Origin allowlist and request-size controls (development token provisioning only).
 - [ ] Typed provider capability registry.
 - [ ] Gemini adapter.
 - [ ] OpenAI adapter.
