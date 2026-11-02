@@ -109,16 +109,18 @@ def create_app(
     ) -> dict[str, object]:
         if idempotency_key is not None and not 8 <= len(idempotency_key) <= 128:
             raise HTTPException(status_code=422, detail="Idempotency-Key must be 8-128 characters.")
+        title = body.title.strip()
+        instruction = body.instruction.strip()
+        if not title or not instruction:
+            raise HTTPException(status_code=422, detail="Title and instruction cannot be blank.")
         try:
             task, created = app.state.task_store.create(
-                title=body.title.strip(),
-                instruction=body.instruction.strip(),
+                title=title,
+                instruction=instruction,
                 idempotency_key=idempotency_key,
             )
         except IdempotencyConflict as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        if not task["title"] or not task["instruction"]:
-            raise HTTPException(status_code=422, detail="Title and instruction cannot be blank.")
         response.status_code = 201 if created else 200
         return task
 
