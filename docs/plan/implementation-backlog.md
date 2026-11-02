@@ -59,7 +59,9 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 
 - [ ] Electron main lifecycle, single-instance lock and process supervision.
 - [ ] Secure preload bridge, strict IPC schemas and renderer sandbox.
-- [ ] React application shell, design tokens and system theme integration.
+- [x] React application shell and initial dark chat workspace (development vertical slice).
+- [x] Electron main/preload with context isolation, renderer Node disabled, sandbox enabled and narrow chat IPC.
+- [ ] Production Electron lifecycle: single-instance lock, tray, hotkeys, persistent window state and signed packaging.
 - [ ] Compact floating Arya surface with peek/expand/collapse behavior.
 - [ ] Resizable full window with sidebar, chats, agents, settings and document pane.
 - [ ] Persistent window size/position/state; multi-monitor and mixed-DPI support.
@@ -76,11 +78,13 @@ The complete product scope is retained. Work is sequenced by dependencies and ri
 - [x] FastAPI local service skeleton bound to loopback with health/readiness and authenticated task lifecycle endpoints (no executor yet).
 - [x] Local bearer authentication, Origin allowlist and request-size controls (development token provisioning only).
 - [ ] DPAPI-backed per-installation/session token generation and rotation.
+- [x] Authenticated `/v1/chat/completions` endpoint with bounded message history.
 - [ ] Typed versioned API, SSE event stream, correlation IDs and reconnect behavior.
-- [ ] Provider capability registry: text, structured output, vision, embeddings, STT, TTS and realtime audio.
+- [x] Initial provider-neutral text-chat contract with explicit Gemini/OpenAI selection.
+- [ ] Provider capability registry: structured output, vision, embeddings, STT, TTS and realtime audio.
 - [ ] Provider capability registry and routing policy (quality, privacy, latency, cost, connectivity, user preference).
-- [ ] Gemini cloud adapter.
-- [ ] OpenAI cloud adapter.
+- [x] Gemini cloud chat adapter (non-streaming initial vertical slice).
+- [x] OpenAI chat-completions adapter (non-streaming initial vertical slice).
 - [ ] Local model runtime adapter with model discovery, capability metadata, hardware/resource checks and offline behavior.
 - [ ] Explicit provider selection/fallback explanation and privacy-policy enforcement (no prohibited cloud egress).
 - [ ] Structured output and streaming normalization.
