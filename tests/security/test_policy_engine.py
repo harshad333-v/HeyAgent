@@ -5,7 +5,7 @@ from backend.app.security.policy_engine import ActionPolicy, canonical_action_di
 
 
 def grant(**overrides):
-    values = dict(user_id="u1", session_id="s1", capabilities=frozenset({"files.read", "browser.navigate", "email.send"}), allowed_tools=frozenset({"read_document", "browser_navigate", "send_email"}), allowed_targets=frozenset({"person@example.com"}), expires_at=5000)
+    values = dict(user_id="u1", session_id="s1", capabilities=frozenset({"files.read", "browser.navigate", "email.send"}), allowed_tools=frozenset({"read_document", "browser_navigate", "send_email"}), allowed_targets=frozenset({"", "person@example.com"}), expires_at=5000)
     values.update(overrides)
     return CapabilityGrant(**values)
 
@@ -63,3 +63,19 @@ def test_digest_changes_when_payload_changes():
     a = ActionRequest("t1", "send_email", "email.send", "person@example.com", {"body": "hello"}, True)
     b = ActionRequest("t1", "send_email", "email.send", "person@example.com", {"body": "changed"}, True)
     assert canonical_action_digest(a) != canonical_action_digest(b)
+
+def test_empty_target_must_be_explicitly_granted():
+    action = ActionRequest("t1", "read_document", "files.read")
+    assert evaluate(action, grant(allowed_targets=frozenset())).kind is DecisionKind.DENY
+
+
+def test_digest_rejects_non_json_payload_values():
+    action = ActionRequest("t1", "read_document", "files.read", payload={"bad": object()})
+    with pytest.raises(ValueError, match="JSON-compatible"):
+        canonical_action_digest(action)
+
+
+def test_digest_rejects_non_finite_numbers():
+    action = ActionRequest("t1", "read_document", "files.read", payload={"bad": float("nan")})
+    with pytest.raises(ValueError, match="JSON-compatible"):
+        canonical_action_digest(action)
